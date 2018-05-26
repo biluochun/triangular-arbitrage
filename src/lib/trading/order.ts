@@ -43,12 +43,12 @@ export class Order extends ApiHandler {
         await this.storage.updateTradingSession(testTrade, 0);
       }
       const nextB = async () => {
-        logger.info('执行nextB...');
+        // logger.info('执行nextB...');
         const orderRes = await this.queryOrder(exchange, testTrade.a.orderId, testTrade.a.pair);
         if (!orderRes) {
           return false;
         }
-        logger.info(`查询订单状态： ${orderRes.status}`);
+        // logger.info(`查询订单状态： ${orderRes.status}`);
         // 交易成功时
         if (orderRes.status === 'closed') {
           testTrade.a.timecost = Helper.endTimer(timer);
@@ -75,6 +75,7 @@ export class Order extends ApiHandler {
     } catch (err) {
       const errMsg = err.message ? err.message : err.msg;
       logger.error(`订单A出错： ${errMsg}`);
+      // process.exit(0);
       await this.errorHandle(testTrade.queueId, errMsg);
     }
   }
@@ -107,13 +108,13 @@ export class Order extends ApiHandler {
         await this.storage.updateTradingSession(trade, 1);
       }
       const nextC = async () => {
-        logger.info('执行nextC...');
+        // logger.info('执行nextC...');
 
         const orderRes = await this.queryOrder(exchange, tradeB.orderId, tradeB.pair);
         if (!orderRes) {
           return false;
         }
-        logger.info(`查询订单状态： ${orderRes.status}`);
+        // logger.info(`查询订单状态： ${orderRes.status}`);
         // 交易成功时
         if (orderRes.status === 'closed') {
           if (this.worker) {
@@ -139,6 +140,7 @@ export class Order extends ApiHandler {
     } catch (err) {
       const errMsg = err.message ? err.message : err.msg;
       logger.error(`订单B出错： ${errMsg}`);
+      // process.exit(0);
       await this.errorHandle(trade.queueId, errMsg);
     }
   }
@@ -173,12 +175,12 @@ export class Order extends ApiHandler {
         await this.storage.updateTradingSession(trade, 2);
       }
       const completedC = async () => {
-        logger.info('completedC...');
+        // logger.info('completedC...');
         const orderRes = await this.queryOrder(exchange, tradeC.orderId, tradeC.pair);
         if (!orderRes) {
           return false;
         }
-        logger.info(`查询订单状态： ${orderRes.status}`);
+        // logger.info(`查询订单状态： ${orderRes.status}`);
         // 交易成功时
         if (orderRes.status === 'closed') {
           if (this.worker) {
@@ -203,6 +205,7 @@ export class Order extends ApiHandler {
     } catch (err) {
       const errMsg = err.message ? err.message : err.msg;
       logger.error(`订单C出错： ${errMsg}`);
+      // process.exit(0);
       await this.errorHandle(trade.queueId, errMsg);
     }
   }
@@ -210,6 +213,9 @@ export class Order extends ApiHandler {
   private async errorHandle(queueId: string, error: string) {
     const res: types.IQueue = <any>await this.storage.queue.get(queueId);
     res.error = error;
+    if (error.match('-1013')) {
+      process.exit(0);
+    }
     await this.storage.queue.updateQueue(res);
   }
 }

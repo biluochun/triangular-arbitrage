@@ -138,8 +138,34 @@ export class TriangularArbitrage extends Event {
         logger.info(`路径：${clc.cyanBright(path)} 利率: ${clcRate}`);
       }*/
       logger.debug(`监视行情[终了] ${Helper.endTimer(timer)}`);
+      if (tempData.fetching) {
+        return;
+      }
+      tempData.fetching = true;
+      exchange.endpoint.rest.account((err: Error, data: any) => {
+        tempData.fetching = false;
+        if (err) {
+          return console.error(err);
+        }
+        const res = data.balances.filter((item: any) => item.free > 0);
+        data.balances = res.map((item: any) => {
+          return `${item.asset}:${item.free}${item.locked === '0.00000000' ? '' : item.locked}`;
+        });
+        const str = JSON.stringify(data.balances, undefined, 2);
+        if (str === tempData.lastData) {
+          // logger.info('data---no---change');
+        } else {
+          logger.info(str);
+          tempData.lastData = str;
+        }
+      });
     } catch (err) {
       logger.error(`监视行情[异常](${Helper.endTimer(timer)}): ${JSON.stringify(err)}`);
     }
   }
 }
+
+const tempData = {
+  fetching: false,
+  lastData: '',
+};
