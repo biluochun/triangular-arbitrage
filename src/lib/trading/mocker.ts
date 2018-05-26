@@ -184,6 +184,9 @@ export class Mocker extends ApiHandler {
     logger.info(`套利货币：${tradeTriangle.coin}`);
     logger.info(`套利前资产：${tradeTriangle.before}, 套利后资产：${tradeTriangle.after}`);
     logger.info(`利润：${clc.greenBright(tradeTriangle.profit)}, 利率：${clc.greenBright(tradeTriangle.rate)}`);
+    logger.info(``);
+    logger.info(``);
+    logger.info(``);
     return tradeTriangle;
   }
 }
