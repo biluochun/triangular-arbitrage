@@ -154,9 +154,14 @@ export class TriangularArbitrage extends Event {
         const str = JSON.stringify(data.balances, undefined, 2);
         if (str === tempData.lastData) {
           // logger.info('data---no---change');
+          clearTimeout(tempData.timer);
         } else {
           logger.info(str);
           tempData.lastData = str;
+          clearTimeout(tempData.timer);
+          tempData.timer = setTimeout(() => {
+            process.exit(0);
+          }, 60 * 1000 * 20);
         }
       });
     } catch (err) {
@@ -168,4 +173,5 @@ export class TriangularArbitrage extends Event {
 const tempData = {
   fetching: false,
   lastData: '',
+  timer: null as any,
 };
