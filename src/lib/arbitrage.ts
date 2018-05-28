@@ -149,13 +149,20 @@ export class TriangularArbitrage extends Event {
         }
         const res = data.balances.filter((item: any) => item.free > 0);
         data.balances = res.map((item: any) => {
-          return `${item.asset}:${item.free}${item.locked === '0.00000000' ? '' : item.locked}`;
+          return `${item.asset}:${item.free}${item.locked === '0.00000000' ? '' : ('(' + item.locked + ')')}`;
         });
         const str = JSON.stringify(data.balances, undefined, 2);
         if (str === tempData.lastData) {
           // logger.info('data---no---change');
           clearTimeout(tempData.timer);
         } else {
+          res.forEach(async (item: any) => {
+            if (item.locked === '0.00000000' && tempData.keep.indexOf(item.asset) === -1) {
+              // 卖掉不要的币
+              // SellSome(item.asset);
+              this.emit('sell', exchange, item.asset, item.free, tickers);
+            }
+          });
           logger.info(str);
           tempData.lastData = str;
           clearTimeout(tempData.timer);
@@ -174,4 +181,10 @@ const tempData = {
   fetching: false,
   lastData: '',
   timer: null as any,
+  keep: [
+    'BNB',
+    'BTC',
+    'ETH',
+    'USDT',
+  ],
 };

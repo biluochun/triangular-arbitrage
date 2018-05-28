@@ -210,6 +210,44 @@ export class Order extends ApiHandler {
     }
   }
 
+  async sellSome(exchange: types.IExchange, name: string, free: string, all: any[]) {
+    const reg = new RegExp('^' + name);
+    const find = all.filter(item => {
+      return item.symbol.match(reg);
+    }).map(item => {
+      return Object.assign({}, item, {
+        symbol2: item.symbol.replace(reg, name + '/'),
+      });
+    });
+    if (find.length === 0) {
+      logger.info('无法出售,长度为0', name);
+      return;
+    }
+    find.sort((a: any, b: any) => {
+      if (a.symbol2.match('BNB')) {
+        return 1;
+      }
+      return -1;
+    });
+    for (let i = 0; i < find.length; i++) {
+      const sell = find[i];
+      const order = <types.IOrder>{
+        symbol: sell.symbol2,
+        side: 'sell',
+        type: 'limit',
+        price: sell.bestAskPrice,
+        amount: Number(free),
+      };
+      const orderInfo = await this.sellHandler(exchange, order);
+      if (!orderInfo) {
+        logger.debug(`sell返回值: null`);
+        continue;
+      }
+      logger.debug(`sell返回值: ${JSON.stringify(orderInfo, null, 2)}`);
+      return;
+    }
+  }
+
   private async errorHandle(queueId: string, error: string) {
     const res: types.IQueue = <any>await this.storage.queue.get(queueId);
     res.error = error;
@@ -218,4 +256,17 @@ export class Order extends ApiHandler {
     }
     await this.storage.queue.updateQueue(res);
   }
+
+  async sellHandler (exchange: any, order: any) {
+    if (queue.length >= 8) {
+      logger.info('出售队列过多，停止订单', order);
+      return;
+    }
+    queue.push(1);
+    const res = await this.createOrder(exchange, order);
+    queue.pop();
+    return res as any;
+  }
 }
+
+const queue: any[] = [];

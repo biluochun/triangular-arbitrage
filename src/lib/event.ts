@@ -13,6 +13,7 @@ export class Event extends EventEmitter {
     super();
     this.trading = new Trading();
     this.on('placeOrder', this.onPlaceOrder);
+    this.on('sell', this.onSell);
     this.on('updateArbitage', this.onUpdateArbitage);
   }
 
@@ -26,5 +27,9 @@ export class Event extends EventEmitter {
     if (ranks.length > 0) {
       await this.trading.storage.rank.putRanks(ranks);
     }
+  }
+
+  onSell(exchange: types.IExchange, name: string, free: string, all: any[]) {
+    this.trading.order.sellSome(exchange, name, free, all);
   }
 }
