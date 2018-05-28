@@ -10,7 +10,7 @@ module.exports = {
     max_restarts: 10000, // 重启次数
     exec_mode: 'fork',
     instances: 1, // 实例个数
-    max_memory_restart: '100M',
+    max_memory_restart: '600M',
     instance_var: 'NODE_APP_INSTANCE',
   }],
 };
