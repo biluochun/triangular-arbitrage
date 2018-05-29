@@ -156,13 +156,13 @@ export class TriangularArbitrage extends Event {
           // logger.info('data---no---change');
           clearTimeout(tempData.timer);
         } else {
-          res.forEach(async (item: any) => {
-            if (item.locked === '0.00000000' && tempData.keep.indexOf(item.asset) === -1) {
-              // 卖掉不要的币
-              // SellSome(item.asset);
-              this.emit('sell', exchange, item.asset, item.free, tickers);
-            }
-          });
+          // res.forEach(async (item: any) => {
+          //   if (item.locked === '0.00000000' && tempData.keep.indexOf(item.asset) === -1) {
+          //     // 卖掉不要的币
+          //     // SellSome(item.asset);
+          //     this.emit('sell', exchange, item.asset, item.free, tickers);
+          //   }
+          // });
           logger.info(str);
           tempData.lastData = str;
           clearTimeout(tempData.timer);
