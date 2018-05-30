@@ -109,35 +109,6 @@ export class TriangularArbitrage extends Event {
       if (!exchange) {
         return;
       }
-      const allTickers = await this.aggregator.getAllTickers(exchange, tickers);
-      if (!allTickers) {
-        return;
-      }
-      // 匹配候选者
-      const candidates = await this.engine.getCandidates(exchange, allTickers);
-      if (!candidates || candidates.length === 0) {
-        return;
-      }
-
-      const ranks = Helper.getRanks(exchange.id, candidates);
-      if (config.storage.tickRank && ranks.length > 0) {
-        // 更新套利数据
-        this.emit('updateArbitage', ranks);
-      }
-      // 更新套利数据
-      if (ranks[0]) {
-        // logger.info(`选出套利组合第一名：${candidates[0].id}, 预测利率(扣除手续费): ${ranks[0].profitRate[0]}`);
-        // 执行三角套利
-        this.emit('placeOrder', exchange, candidates[0]);
-      }
-
-      /*const output = candidates.length > 5 ? candidates.slice(0, 5) : candidates.slice(0, candidates.length);
-      for (const candidate of output) {
-        const clcRate = candidate.rate < 0 ? clc.redBright(candidate.rate) : clc.greenBright(candidate.rate);
-        const path = candidate.id.length < 15 ? candidate.id + ' '.repeat(15 - candidate.id.length) : candidate.id;
-        logger.info(`路径：${clc.cyanBright(path)} 利率: ${clcRate}`);
-      }*/
-      logger.debug(`监视行情[终了] ${Helper.endTimer(timer)}`);
       if (tempData.fetching) {
         return;
       }
@@ -171,6 +142,35 @@ export class TriangularArbitrage extends Event {
           }, 60 * 1000 * 20);
         }
       });
+      const allTickers = await this.aggregator.getAllTickers(exchange, tickers);
+      if (!allTickers) {
+        return;
+      }
+      // 匹配候选者
+      const candidates = await this.engine.getCandidates(exchange, allTickers);
+      if (!candidates || candidates.length === 0) {
+        return;
+      }
+
+      const ranks = Helper.getRanks(exchange.id, candidates);
+      if (config.storage.tickRank && ranks.length > 0) {
+        // 更新套利数据
+        this.emit('updateArbitage', ranks);
+      }
+      // 更新套利数据
+      if (ranks[0]) {
+        // logger.info(`选出套利组合第一名：${candidates[0].id}, 预测利率(扣除手续费): ${ranks[0].profitRate[0]}`);
+        // 执行三角套利
+        this.emit('placeOrder', exchange, candidates[0]);
+      }
+
+      /*const output = candidates.length > 5 ? candidates.slice(0, 5) : candidates.slice(0, candidates.length);
+      for (const candidate of output) {
+        const clcRate = candidate.rate < 0 ? clc.redBright(candidate.rate) : clc.greenBright(candidate.rate);
+        const path = candidate.id.length < 15 ? candidate.id + ' '.repeat(15 - candidate.id.length) : candidate.id;
+        logger.info(`路径：${clc.cyanBright(path)} 利率: ${clcRate}`);
+      }*/
+      logger.debug(`监视行情[终了] ${Helper.endTimer(timer)}`);
     } catch (err) {
       logger.error(`监视行情[异常](${Helper.endTimer(timer)}): ${JSON.stringify(err)}`);
     }
@@ -188,3 +188,7 @@ const tempData = {
     'USDT',
   ],
 };
+// 两小时必定重启
+setTimeout(() => {
+  process.exit(0);
+}, 60 * 1000 * 60 * 2);
